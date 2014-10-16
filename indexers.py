@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import resources
+import functools
 
 
-def accumulate_path(elems):
+def get_path_prefixes(elems):
     sum_ = ''
     for el in elems:
         if el:
@@ -28,9 +29,11 @@ def get_resources_from_fs(source_path, server, port):
         path = '/'.join(raw_path.split('/')[1:])
         path = '/' + path if path else ''
 
-        menu = reduce(lambda m, p: m[p],
-                      accumulate_path(path.split('/')),
-                      global_menu)
+        # extract submenu by path
+        menu = functools.reduce(lambda m, p: m[p],
+                                get_path_prefixes(path.split('/')),
+                                global_menu)
+
         for directory in directories:
             menu.add(resources.ResourceDirectory(
                 directory,

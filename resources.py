@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import abc
 
@@ -42,7 +42,7 @@ class Resource(object):
 class ResourceDirectory(Resource):
 
     def __init__(self, display_string, selector, host, port):
-        super(ResourceDirectory, self).__init__(
+        super().__init__(
             RESOURCE_TYPES['directory'], display_string, selector, host, port,
         )
         self._resources = {}
@@ -56,19 +56,19 @@ class ResourceDirectory(Resource):
     def add(self, item):
         self._resources[item.selector] = item
 
-    def iteritems(self):
-        return self._resources.iteritems()
+    def items(self):
+        return self._resources.items()
 
     def send_data(self, socket):
-        for resource in self._resources.itervalues():
-            socket.send(resource.as_menu_item())
-        socket.send(".\r\n")
+        for resource in self._resources.values():
+            socket.send(resource.as_menu_item().encode("utf-8"))
+        socket.send(b".\r\n")
 
 
 class ResourceFile(Resource):
 
     def __init__(self, display_string, selector, host, port, path):
-        super(ResourceFile, self).__init__(
+        super().__init__(
             RESOURCE_TYPES['file'], display_string, selector, host, port,
         )
         with open(path) as f:
@@ -76,5 +76,5 @@ class ResourceFile(Resource):
 
     def send_data(self, socket):
         for line in self.content:
-            socket.send(line)
-        socket.send('\r\n.\r\n')
+            socket.send(line.encode("utf-8"))
+        socket.send(b'\r\n.\r\n')
