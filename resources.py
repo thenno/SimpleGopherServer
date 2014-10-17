@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import abc
 from collections import OrderedDict
 
@@ -7,6 +6,7 @@ from collections import OrderedDict
 RESOURCE_TYPES = {
     'file': 0,
     'directory': 1,
+    'info': 'i',
 }
 
 
@@ -36,7 +36,7 @@ class Resource(object):
         ]) + '\r\n'
 
     @abc.abstractmethod
-    def send_data(self, socket):
+    def send_data(self, sock):
         pass
 
 
@@ -60,10 +60,10 @@ class ResourceDirectory(Resource):
     def items(self):
         return self._resources.items()
 
-    def send_data(self, socket):
+    def send_data(self, sock):
         for resource in self._resources.values():
-            socket.send(resource.as_menu_item().encode("utf-8"))
-        socket.send(b".\r\n")
+            sock.send(resource.as_menu_item().encode("utf-8"))
+        sock.send(b".\r\n")
 
 
 class ResourceFile(Resource):
@@ -75,7 +75,22 @@ class ResourceFile(Resource):
         with open(path) as f:
             self.content = [line for line in f]
 
-    def send_data(self, socket):
+    def send_data(self, sock):
         for line in self.content:
-            socket.send(line.encode("utf-8"))
-        socket.send(b'\r\n.\r\n')
+            sock.send(line.encode("utf-8"))
+        sock.send(b'\r\n.\r\n')
+
+
+class ResourceInfo(Resource):
+
+    def __init__(self, display_string, selector, host, port):
+        self.message = display_string
+        super().__init__(
+            RESOURCE_TYPES['info'], display_string, selector, host, port
+        )
+
+    def as_menu_item(self):
+        return self.resource_type + self.message + '\r\n'
+
+    def send_data(self, sock):
+        sock.send(self.message.encode("utf-8"))
