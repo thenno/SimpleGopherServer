@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import abc
+from collections import OrderedDict
 
 
 RESOURCE_TYPES = {
@@ -45,7 +46,7 @@ class ResourceDirectory(Resource):
         super().__init__(
             RESOURCE_TYPES['directory'], display_string, selector, host, port,
         )
-        self._resources = {}
+        self._resources = OrderedDict()
 
     def __iter__(self):
         return self._resources.__iter__()
