@@ -42,7 +42,9 @@ def get_resources_from_fs(source_path, server, port):
                 port,
             ))
 
-        for file_ in files:
+
+        # exclude dotfiles
+        for file_ in (f for f in files if not f.startswith('.')):
             menu.add(resources.ResourceFile(
                 file_,
                 mkpath(path, file_),
