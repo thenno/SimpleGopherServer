@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+EOF = b'\r\n'
 
 def get_path_prefixes(elems):
     sum_ = ''

@@ -2,6 +2,8 @@
 import abc
 from collections import OrderedDict
 
+import utils
+
 
 RESOURCE_TYPES = {
     'file': 0,
@@ -33,10 +35,10 @@ class Resource(object):
             self.selector,
             self.host,
             self.port,
-        ]) + '\r\n'
+        ])
 
     @abc.abstractmethod
-    def send_data(self, sock):
+    def display(self):
         pass
 
 
@@ -60,10 +62,10 @@ class ResourceDirectory(Resource):
     def items(self):
         return self._resources.items()
 
-    def send_data(self, sock):
+    def display(self):
         for resource in self._resources.values():
-            sock.send(resource.as_menu_item().encode("utf-8"))
-        sock.send(b".\r\n")
+            yield resource.as_menu_item().encode("utf-8") + utils.EOF
+        yield b'.' + utils.EOF
 
 
 class ResourceFile(Resource):
@@ -75,10 +77,10 @@ class ResourceFile(Resource):
         with open(path) as f:
             self.content = [line for line in f]
 
-    def send_data(self, sock):
+    def display(self):
         for line in self.content:
-            sock.send(line.encode("utf-8"))
-        sock.send(b'\r\n.\r\n')
+            yield line.encode("utf-8")
+        yield utils.EOF + b'.' + utils.EOF
 
 
 class ResourceInfo(Resource):
@@ -90,7 +92,7 @@ class ResourceInfo(Resource):
         )
 
     def as_menu_item(self):
-        return self.resource_type + self.message + '\r\n'
+        return self.resource_type + self.message
 
-    def send_data(self, sock):
-        sock.send(self.message.encode("utf-8"))
+    def display(self):
+        yield self.message.encode("utf-8") + utils.EOF

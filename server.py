@@ -1,57 +1,50 @@
 #!/usr/bin/python3
-import multiprocessing
-import socket
-import threading
+import asyncio
+import concurrent.futures
 
 import routers
 
 
-class GopherConnection(multiprocessing.Process):
-    def __init__(self, conn, router):
-        multiprocessing.Process.__init__(self)
-        self.conn = conn
+class GopherServer(object):
+
+    def __init__(self, host, port, router, loop=None):
         self.router = router
+        self._loop = loop or asyncio.get_event_loop()
+        self._server = asyncio.start_server(self.handle_gopher,
+                                            host=host,
+                                            port=port)
 
-    def run(self):
-        data = self.conn.recv(1024).decode("utf-8").rstrip('\r\n')
-        self.router[data].send_data(self.conn)
-        self.conn.shutdown(socket.SHUT_RDWR)
-        self.conn.close()
+    def start(self, and_loop=True):
+        self._server = self._loop.run_until_complete(self._server)
+        if and_loop:
+            self._loop.run_forever()
 
+    def stop(self, and_loop=True):
+        self._server.close()
+        if and_loop:
+            self._loop.close()
 
-class GopherServer(threading.Thread):
+    @asyncio.coroutine
+    def handle_gopher(self, reader, writer):
+        data = yield from reader.readline()
+        data = data.decode('utf-8').rstrip('\r\n')
+        writer.writelines(self.router[data].display())
 
-    def __init__(self, host, port, router):
-        threading.Thread.__init__(self)
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((host, port))
-        self.socket.listen(10)
-        self.router = router
-
-        self.is_running = False
-        self.opened_connections = []
-
-    def run(self):
-        self.is_running = True
-        while self.is_running:
-            conn, adress = self.socket.accept()
-            open_conn = GopherConnection(conn, self.router)
-            open_conn.start()
-
-    def stop(self):
-        self.is_running = False
-        for children in multiprocessing.active_children():
-            children.join(5)
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
+        if writer.can_write_eof():
+            writer.write_eof()
+        writer.close()
 
 
 def main():
     index = routers.get_index('content', 'localhost', 7070)
     router = routers.get_router(index)
-    gopher_server = GopherServer('localhost', 7070, router)
-    gopher_server.start()
-
+    server = GopherServer('localhost', 7070, router)
+    try:
+        server.start()
+    except KeyboardInterrupt:
+        pass # Press Ctrl+C to stop
+    finally:
+        server.stop()
 
 if __name__ == '__main__':
     main()
