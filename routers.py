@@ -1,13 +1,20 @@
 #!/usr/bin/python3
-
 import functools
 import os
 
+import log
 import resources
 import utils
 
 
 def get_index(source_path, server, port):
+    logger = log.get_logger('indexer')
+
+    logger.info({'action': 'indexing',
+                 'path': os.getcwd() + os.sep + source_path,
+                 'server': server,
+                 'port': port})
+
     global_menu = resources.ResourceDirectory(
         'start',
         '',
@@ -48,7 +55,11 @@ def get_index(source_path, server, port):
 
 def get_router(index, router=None):
     if router is None:
+        logger = log.get_logger('router')
         router = {'': index}
+        logger.info({'action': 'get_router',
+                     'from': index,
+                     'from_type': 'index'})
 
     for route, item in index.items():
         router[route] = item
