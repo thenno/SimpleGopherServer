@@ -58,7 +58,7 @@ def get_router(index, router=None):
         logger = log.get_logger('router')
         router = {'': index}
         logger.info({'action': 'get_router',
-                     'from': index,
+                     'from': type(index),
                      'from_type': 'index'})
 
     for route, item in index.items():

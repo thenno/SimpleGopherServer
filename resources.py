@@ -75,7 +75,7 @@ class ResourceFile(Resource):
             RESOURCE_TYPES['file'], display_string, selector, host, port,
         )
         with open(path) as f:
-            self.content = (line for line in f)
+            self.content = [line for line in f]
 
     def display(self):
         for line in self.content:

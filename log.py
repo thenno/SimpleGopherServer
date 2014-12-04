@@ -46,8 +46,8 @@ class TSKVLogger(logging.getLoggerClass()):
 def set_logging():
     logging.getLogger('asyncio').disabled = True
     log_format = 'level=%(levelname)s\t%(message)s\t' + \
-                 'source=%(filename)s:%(funcName)s:%(lineno)d' + \
-                 '\tdate=%(asctime)s\t'
+                 'source=%(filename)s:%(funcName)s:%(lineno)d\t' + \
+                 'pid=%(process)d\tdate=%(asctime)s\t'
     logging.basicConfig(format=log_format,
                         level=logging.DEBUG)
 
