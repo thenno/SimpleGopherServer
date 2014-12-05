@@ -11,7 +11,7 @@ def get_index(source_path, server, port):
     logger = log.get_logger('indexer')
 
     logger.info({'action': 'indexing',
-                 'path': os.getcwd() + os.sep + source_path,
+                 'path': source_path,
                  'server': server,
                  'port': port})
 
