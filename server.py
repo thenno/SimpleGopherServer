@@ -51,11 +51,11 @@ class GopherServer(object):
         except concurrent.futures.TimeoutError:
             self.logger.info({'action': 'gopher_connection',
                               'peer': peer,
-                              'result': 'time_out'})
+                              'result': 'timeout'})
         except BaseException as e:
             self.logger.error({'action': 'gopher_connection',
                                'peer': peer,
-                               'result': 'unknown_error',
+                               'result': 'unknown error',
                                'error': e})
         finally:
             if writer.can_write_eof():

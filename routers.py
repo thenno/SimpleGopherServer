@@ -22,6 +22,10 @@ def get_index(source_path, server, port):
         port,
     )
 
+    if not os.path.isdir(source_path):
+        logger.warning({'action': 'indexing',
+                        'error': '{0} is not directory'.format(source_path)})
+
     for raw_path, directories, files in os.walk(source_path):
         path = '/'.join(raw_path.split('/')[1:])
         path = '/' + path if path else ''
