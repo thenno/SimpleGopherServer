@@ -9,11 +9,11 @@ import utils
 
 def get_index(source_path, server, port):
     logger = log.get_logger('indexer')
+    alogger = log.TSKVLoggerAdapter(logger, {'action': 'indexing'})
 
-    logger.info({'action': 'indexing',
-                 'path': source_path,
-                 'server': server,
-                 'port': port})
+    alogger.info({'path': source_path,
+                  'server': server,
+                  'port': port})
 
     global_menu = resources.ResourceDirectory(
         'start',
@@ -23,12 +23,15 @@ def get_index(source_path, server, port):
     )
 
     if not os.path.isdir(source_path):
-        logger.warning({'action': 'indexing',
-                        'error': '{0} is not directory'.format(source_path)})
+        alogger.warning({'error': '{0} is not directory'.format(source_path)})
 
     for raw_path, directories, files in os.walk(source_path):
-        path = '/'.join(raw_path.split('/')[1:])
-        path = '/' + path if path else ''
+        path = raw_path.replace(source_path, '', 1)
+        path = path if path else ''
+        alogger.debug({'raw_path': raw_path,
+                       'path': path,
+                       'dirs': directories,
+                       'files': files})
 
         # extract submenu by path
         menu = functools.reduce(lambda m, p: m[p],

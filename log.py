@@ -25,28 +25,61 @@ class TSKVMessage(object):
         return self._delimiter.join(sorted(pairs))
 
 
-class TSKVLogger(logging.getLoggerClass()):
+class TSKVLogger(object):
 
-    def debug(self, msg, *args, **kwargs):
-        super().debug(TSKVMessage(**msg), *args, **kwargs)
+    def __init__(self, name):
+        self.logger = logging.getLogger(name)
 
-    def info(self, msg, *args, **kwargs):
-        super().info(TSKVMessage(**msg), *args, **kwargs)
+    def _log(self, level, msg):
+        self.logger._log(level, TSKVMessage(**msg), (), {})
 
-    def warning(self, msg, *args, **kwargs):
-        super().warning(TSKVMessage(**msg), *args, **kwargs)
+    def debug(self, msg):
+        self._log(logging.DEBUG, msg)
 
-    def error(self, msg, *args, **kwargs):
-        super().error(TSKVMessage(**msg), *args, **kwargs)
+    def info(self, msg):
+        self._log(logging.INFO, msg)
 
-    def critical(self, msg, *args, **kwargs):
-        super().critical(TSKVMessage(**msg), *args, **kwargs)
+    def warning(self, msg):
+        self._log(logging.WARNING, msg)
+
+    def error(self, msg):
+        self._log(logging.ERROR, msg)
+
+    def critical(self, msg):
+        self._log(logging.CRITICAL, msg)
+
+
+class TSKVLoggerAdapter(object):
+
+    def __init__(self, logger, default=None):
+        if default is None:
+            default = {}
+        self.default = default
+        self.logger = logger
+
+    def _log(self, level, msg):
+        message = dict(msg, **self.default)
+        self.logger._log(level, message)
+
+    def debug(self, msg):
+        self._log(logging.DEBUG, msg)
+
+    def info(self, msg):
+        self._log(logging.INFO, msg)
+
+    def warning(self, msg):
+        self._log(logging.WARNING, msg)
+
+    def error(self, msg):
+        self._log(logging.ERROR, msg)
+
+    def critical(self, msg):
+        self._log(logging.CRITICAL, msg)
 
 
 def set_logging():
     logging.getLogger('asyncio').disabled = True
-    log_format = 'level=%(levelname)s\t%(message)s\t' + \
-                 'source=%(filename)s:%(funcName)s:%(lineno)d\t' + \
+    log_format = 'level=%(levelname)s\tlog_name=%(name)s\t%(message)s\t' + \
                  'pid=%(process)d\tdate=%(asctime)s\t'
     logging.basicConfig(format=log_format,
                         level=logging.DEBUG)
@@ -55,5 +88,4 @@ def set_logging():
 set_logging()
 
 def get_logger(name):
-    logging.setLoggerClass(TSKVLogger)
-    return logging.getLogger(name)
+    return TSKVLogger(name)

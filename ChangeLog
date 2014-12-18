@@ -1,0 +1,13 @@
+2014-12-18  thenno  <thenno@thenno-workbook>
+
+	* main.py: Add signal handlers: for SIGTERM (stop), SIGINT (stop) and SIGUSR1 (restart).
+	* main.py: Add argparser (--config).
+	* main.py: Add json config for server.
+	* server.py: GopherServer delegate async-loop control to Manager.
+
+2014-12-17  thenno  <thenno@thenno-workbook>
+
+	* log.py (TSKVMessage, TSKVLogger.info): Improve TSKVLogger, add TSKVLoggerAdapter (analog logging.LoggerAdapter). Fix log system.
+
+	* routers.py (get_index): Fix indexing.
+
