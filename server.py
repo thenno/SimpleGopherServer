@@ -17,21 +17,21 @@ class GopherServer(object):
         self._server = asyncio.start_server(self.handle_gopher,
                                             host=host,
                                             port=port)
-        self.logger.info({'action': 'gopher_server_init'})
+        self.logger.info({'action': 'gopher server init'})
 
     def start(self):
-        self.logger.info({'action': 'gopher_server_start'})
+        self.logger.info({'action': 'gopher server start'})
         self._server = self._loop.run_until_complete(self._server)
 
     def stop(self):
         self._server.close()
-        self.logger.info({'action': 'gopher_server_stop'})
+        self.logger.info({'action': 'gopher server stop'})
 
     @asyncio.coroutine
     def handle_gopher(self, reader, writer):
         peer = writer.get_extra_info('peername')[0]
         alogger = log.TSKVLoggerAdapter(self.logger,
-                                        {'action': 'gopher_connection',
+                                        {'action': 'gopher connection',
                                          'peer': peer})
 
         try:

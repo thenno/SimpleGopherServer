@@ -1,6 +1,16 @@
+2014-12-19  thenno  <thenno@thenno-workbook>
+
+	* server.py: Fix names for server log actions.
+
+	* main.py: set_logging must call from main module.
+	(Manager._reinit_log_system): Add restart log system.
+
+	* log.py (set_logging): log_level is parameter for set_logging. Rename set_logging to init_log_system.
+
 2014-12-18  thenno  <thenno@thenno-workbook>
 
 	* main.py: Add signal handlers: for SIGTERM (stop), SIGINT (stop) and SIGUSR1 (restart).
+	(Manager.restart): Remove SIGUSR2 handler (reload config).
 	* main.py: Add argparser (--config).
 	* main.py: Add json config for server.
 	* server.py: GopherServer delegate async-loop control to Manager.

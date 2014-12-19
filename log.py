@@ -77,15 +77,13 @@ class TSKVLoggerAdapter(object):
         self._log(logging.CRITICAL, msg)
 
 
-def set_logging():
+def init_log_system(config):
     logging.getLogger('asyncio').disabled = True
     log_format = 'level=%(levelname)s\tlog_name=%(name)s\t%(message)s\t' + \
                  'pid=%(process)d\tdate=%(asctime)s\t'
     logging.basicConfig(format=log_format,
-                        level=logging.DEBUG)
+                        level=getattr(logging, config['level']))
 
-
-set_logging()
 
 def get_logger(name):
     return TSKVLogger(name)
