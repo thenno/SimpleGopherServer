@@ -1,6 +1,7 @@
 2014-12-22  thenno  <thenno@thenno-workbook>
 
-	* utils.py (load_config): Add general json loader.
+* utils.py (load_config): Add general json loader.
+* routers.py (get_index): Fix indexing not utf-8 files.
 
 2014-12-19  thenno  <thenno@thenno-workbook>
 

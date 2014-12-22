@@ -9,11 +9,11 @@ import utils
 
 def get_index(source_path, server, port):
     logger = log.get_logger('indexer')
-    alogger = log.TSKVLoggerAdapter(logger, {'action': 'indexing'})
+    alogger = log.TSKVLoggerAdapter(logger, {'action': 'indexing',
+                                             'server': server,
+                                             'port': port})
 
-    alogger.info({'path': source_path,
-                  'server': server,
-                  'port': port})
+    alogger.info({'path': source_path})
 
     global_menu = resources.ResourceDirectory(
         'start',
@@ -28,10 +28,6 @@ def get_index(source_path, server, port):
     for raw_path, directories, files in os.walk(source_path):
         path = raw_path.replace(source_path, '', 1)
         path = path if path else ''
-        alogger.debug({'raw_path': raw_path,
-                       'path': path,
-                       'dirs': directories,
-                       'files': files})
 
         # extract submenu by path
         menu = functools.reduce(lambda m, p: m[p],
@@ -39,6 +35,8 @@ def get_index(source_path, server, port):
                                 global_menu)
 
         for directory in directories:
+            alogger.debug({'path': utils.mkpath(path, directory),
+                           'type': 'dir'})
             menu.add(resources.ResourceDirectory(
                 directory,
                 utils.mkpath(path, directory),
@@ -49,13 +47,19 @@ def get_index(source_path, server, port):
 
         # exclude dotfiles
         for file_ in (f for f in files if not f.startswith('.')):
-            menu.add(resources.ResourceFile(
-                file_,
-                utils.mkpath(path, file_),
-                server,
-                port,
-                utils.mkpath(source_path, path, file_)
-            ))
+            alogger.debug({'path': utils.mkpath(path, file_),
+                           'type': 'file'})
+            try:
+                menu.add(resources.ResourceFile(
+                    file_,
+                    utils.mkpath(path, file_),
+                    server,
+                    port,
+                    utils.mkpath(source_path, path, file_)
+                ))
+            except UnicodeDecodeError:
+                alogger.warning({'path': utils.mkpath(path, file_),
+                                 'error': 'File is not utf-8'})
 
     return global_menu
 
