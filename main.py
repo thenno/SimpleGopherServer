@@ -13,7 +13,7 @@ class Manager(object):
 
     def _load_config(self, path):
         alogger = log.TSKVLoggerAdapter(self.logger,
-                                        {'action': 'load_config',
+                                        {'action': 'load config',
                                          'path': self._config_path})
         try:
             with open(path) as config_file:
