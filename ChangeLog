@@ -1,3 +1,7 @@
+2014-12-22  thenno  <thenno@thenno-workbook>
+
+	* utils.py (load_config): Add general json loader.
+
 2014-12-19  thenno  <thenno@thenno-workbook>
 
 	* server.py: Fix names for server log actions.

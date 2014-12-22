@@ -1,37 +1,21 @@
 #!/usr/bin/python3
 import argparse
 import asyncio
-import json
 import signal
 
 import log
 import routers
 import server
+import utils
 
 
 class Manager(object):
-
-    def _load_config(self, path):
-        alogger = log.TSKVLoggerAdapter(self.logger,
-                                        {'action': 'load config',
-                                         'path': self._config_path})
-        try:
-            with open(path) as config_file:
-                return json.load(config_file)
-        except IOError:
-            alogger.error({'error': 'invalid config file path'})
-            exit(1)
-        except ValueError:
-            alogger.error({'error': 'invalid config file format'})
-            exit(1)
-
-        alogger.info({'result': 'success'})
 
     def _init_log_system(self):
         log.init_log_system(self._config['logging'])
 
     def _reinit_log_system(self):
-        self.logger.info({'action': 'reload config, restart log system'})
+        self._logger.info({'action': 'reload config, restart log system'})
         self._config = self._load_config(self._config_path)
         log.init_log_system(self._config['logging'])
 
@@ -46,7 +30,7 @@ class Manager(object):
                                       self._reinit_log_system)
 
     def start(self):
-        self._config = self._load_config(self._config_path)
+        self._config = utils.load_config(self._config_path, self._logger)
         self._init_log_system()
 
         self._loop = asyncio.new_event_loop()
@@ -75,7 +59,7 @@ class Manager(object):
         self.start()
 
     def __init__(self, config_path='config.json'):
-        self.logger = log.get_logger('manager')
+        self._logger = log.get_logger('manager')
         self._config_path = config_path
 
         self._loop = None
