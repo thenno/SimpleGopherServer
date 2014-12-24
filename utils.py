@@ -3,6 +3,8 @@ import json
 import log
 
 EOF = b'\r\n'
+ERROR_HOST = 'error.host'
+ERROR_PORT = 1
 
 def get_path_prefixes(elems):
     sum_ = ''

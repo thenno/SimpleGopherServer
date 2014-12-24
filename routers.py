@@ -7,59 +7,69 @@ import resources
 import utils
 
 
-def get_index(source_path, server, port):
+resource_types = {
+    'directory': resources.ResourceDirectory,
+    'file': resources.ResourceFile,
+}
+
+
+def get_index(source_path, config, server, port):
     logger = log.get_logger('indexer')
-    alogger = log.TSKVLoggerAdapter(logger, {'action': 'indexing',
-                                             'server': server,
+    alogger = log.TSKVLoggerAdapter(logger, {'server': server,
                                              'port': port})
 
-    alogger.info({'path': source_path})
+    alogger.info({'action': 'start indexing',
+                  'path': source_path})
 
     global_menu = resources.ResourceDirectory(
         'start',
         '',
         server,
         port,
+        None,
     )
 
     if not os.path.isdir(source_path):
-        alogger.warning({'error': '{0} is not directory'.format(source_path)})
+        alogger.warning({'action': 'start indexing',
+                         'error': 'Path is not directory',
+                         'path': source_path})
 
     for raw_path, directories, files in os.walk(source_path):
         path = raw_path.replace(source_path, '', 1)
-        path = path if path else ''
+
+        dir_config_path = utils.mkpath(source_path, path, config)
+        if os.path.exists(dir_config_path):
+            alogger.debug({'action': 'parsing config for dir',
+                           'path': dir_config_path})
+            dir_config = utils.load_config(dir_config_path, alogger)
 
         # extract submenu by path
         menu = functools.reduce(lambda m, p: m[p],
                                 utils.get_path_prefixes(path.split('/')),
                                 global_menu)
 
-        for directory in directories:
-            alogger.debug({'path': utils.mkpath(path, directory),
-                           'type': 'dir'})
-            menu.add(resources.ResourceDirectory(
-                directory,
-                utils.mkpath(path, directory),
-                server,
-                port,
-            ))
+        for resource_type, raw_resources in [('directory', directories),
+                                             ('file', files)]:
+            for resource in (r for r in raw_resources
+                             if not r.startswith('.')):
+                alogger.debug({'action': 'indexing',
+                               'path': utils.mkpath(path, resource),
+                               'type': resource_type})
 
-
-        # exclude dotfiles
-        for file_ in (f for f in files if not f.startswith('.')):
-            alogger.debug({'path': utils.mkpath(path, file_),
-                           'type': 'file'})
-            try:
-                menu.add(resources.ResourceFile(
-                    file_,
-                    utils.mkpath(path, file_),
-                    server,
-                    port,
-                    utils.mkpath(source_path, path, file_)
-                ))
-            except UnicodeDecodeError:
-                alogger.warning({'path': utils.mkpath(path, file_),
-                                 'error': 'File is not utf-8'})
+                factory = resource_types[resource_type]
+                resouce_path = utils.mkpath(source_path, path, resource)
+                try:
+                    menu.add(factory(
+                        resource,
+                        utils.mkpath(path, resource),
+                        server,
+                        port,
+                        resouce_path,
+                    ))
+                except UnicodeDecodeError:
+                    alogger.warning({'action': 'indexing',
+                                     'path': resouce_path,
+                                     'error': 'File is not utf-8'})
 
     return global_menu
 

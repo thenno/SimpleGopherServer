@@ -1,7 +1,14 @@
+2014-12-24  thenno  <thenno@thenno-workbook>
+
+	* routers.py (get_index): Fix logging.
+	* routers.py (get_index): Improve indexing. Indexing for files and dirs is equal.
+	* resources.py: Fix resource type names.
+
 2014-12-22  thenno  <thenno@thenno-workbook>
 
-* utils.py (load_config): Add general json loader.
-* routers.py (get_index): Fix indexing not utf-8 files.
+	* main.py (Manager._reinit_log_system): Fix reload config function.
+	* utils.py (load_config): Add general json loader.
+	* routers.py (get_index): Fix indexing not utf-8 files.
 
 2014-12-19  thenno  <thenno@thenno-workbook>
 

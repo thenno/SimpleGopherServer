@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-import argparse
 import asyncio
+import argparse
 import signal
 
 import log
@@ -16,7 +16,7 @@ class Manager(object):
 
     def _reinit_log_system(self):
         self._logger.info({'action': 'reload config, restart log system'})
-        self._config = self._load_config(self._config_path)
+        self._config = utils.load_config(self._config_path, self._logger)
         log.init_log_system(self._config['logging'])
 
     def _init_signals(self):
@@ -40,6 +40,7 @@ class Manager(object):
 
         server_config = self._config['server']
         _index = routers.get_index(server_config['content_dir'],
+                                   server_config['config_dir_file'],
                                    server_config['server'],
                                    server_config['port'])
         _router = routers.get_router(_index)

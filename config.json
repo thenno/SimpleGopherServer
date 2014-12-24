@@ -1,6 +1,7 @@
 {
     "server": {
         "content_dir": "/home/thenno/program/SimpleGopherServer/content",
+        "config_dir_file": ".config",
         "server": "localhost",
         "port": 7070,
         "request_timeout": 10.0

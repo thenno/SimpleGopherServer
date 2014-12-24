@@ -6,7 +6,7 @@ import utils
 
 
 RESOURCE_TYPES = {
-    'file': 0,
+    'plain_text_file': 0,
     'directory': 1,
     'info': 'i',
 }
@@ -44,7 +44,7 @@ class Resource(object):
 
 class ResourceDirectory(Resource):
 
-    def __init__(self, display_string, selector, host, port):
+    def __init__(self, display_string, selector, host, port, extra):
         super().__init__(
             RESOURCE_TYPES['directory'], display_string, selector, host, port,
         )
@@ -70,9 +70,15 @@ class ResourceDirectory(Resource):
 
 class ResourceFile(Resource):
 
-    def __init__(self, display_string, selector, host, port, path):
+    def __init__(self, display_string, selector, host, port, extra):
+        path = extra
+
         super().__init__(
-            RESOURCE_TYPES['file'], display_string, selector, host, port,
+            RESOURCE_TYPES['plain_text_file'],
+            display_string,
+            selector,
+            host,
+            port,
         )
         with open(path) as f:
             self.content = [line for line in f]
@@ -85,7 +91,7 @@ class ResourceFile(Resource):
 
 class ResourceInfo(Resource):
 
-    def __init__(self, display_string, selector, host, port):
+    def __init__(self, display_string, selector, host, port, extra):
         self.message = display_string
         super().__init__(
             RESOURCE_TYPES['info'], display_string, selector, host, port
