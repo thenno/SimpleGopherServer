@@ -39,14 +39,13 @@ class Manager(object):
         self._init_signals()
 
         server_config = self._config['server']
-        _index = routers.get_index(server_config['content_dir'],
-                                   server_config['config_dir_file'],
-                                   server_config['server'],
-                                   server_config['port'])
-        _router = routers.get_router(_index)
+        index = routers.get_index(server_config['content_dir'],
+                                  server_config['server'],
+                                  server_config['port'])
+        router = routers.get_router(index)
         self._server = server.GopherServer(server_config['server'],
                                            server_config['port'],
-                                           _router,
+                                           router,
                                            self._loop)
         self._server.start()
         self._loop.run_forever()

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import json
 import log
 
@@ -6,16 +7,12 @@ EOF = b'\r\n'
 ERROR_HOST = 'error.host'
 ERROR_PORT = 1
 
-def get_path_prefixes(elems):
+def get_path_prefixes(path):
     sum_ = ''
-    for elem in elems:
+    for elem in path.split(os.path.sep):
         if elem:
-            sum_ += '/' + elem
+            sum_ += os.path.sep + elem
             yield sum_
-
-
-def mkpath(*elems):
-    return '/'.join(elems)
 
 
 def load_config(path, logger):

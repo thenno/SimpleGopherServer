@@ -7,19 +7,23 @@ import resources
 import utils
 
 
-resource_types = {
+RESOURCE_TYPE_FACTORIES = {
     'directory': resources.ResourceDirectory,
     'file': resources.ResourceFile,
 }
 
 
-def get_index(source_path, config, server, port):
-    logger = log.get_logger('indexer')
-    alogger = log.TSKVLoggerAdapter(logger, {'server': server,
-                                             'port': port})
+def indexing_path(source_path):
+    for raw_path, directories, files in os.walk(source_path):
+        for directory in directories:
+            yield (raw_path, directory, 'directory')
+        for file_ in (f for f in files if not f.startswith('.')):
+            yield (raw_path, file_, 'file')
 
-    alogger.info({'action': 'start indexing',
-                  'path': source_path})
+
+def get_index(source_path, server, port):
+
+    full_source_path = os.path.realpath(source_path)
 
     global_menu = resources.ResourceDirectory(
         'start',
@@ -29,58 +33,55 @@ def get_index(source_path, config, server, port):
         None,
     )
 
-    if not os.path.isdir(source_path):
-        alogger.warning({'action': 'start indexing',
-                         'error': 'Path is not directory',
-                         'path': source_path})
+    for path, name, type_ in indexing_path(full_source_path):
 
-    for raw_path, directories, files in os.walk(source_path):
-        path = raw_path.replace(source_path, '', 1)
+        menu_path = path.replace(full_source_path, '', 1)
+        selector = menu_path + '/' + name
+        fs_path = os.path.join(full_source_path, path, name)
 
-        dir_config_path = utils.mkpath(source_path, path, config)
-        if os.path.exists(dir_config_path):
-            alogger.debug({'action': 'parsing config for dir',
-                           'path': dir_config_path})
-            dir_config = utils.load_config(dir_config_path, alogger)
+        logger = log.TSKVLoggerAdapter(
+            log.get_logger('indexing'),
+            {'action': 'indexing',
+             'selector': selector,
+             'server': server,
+             'port': port,
+             'fs_path': fs_path,
+             'type': type_},
+        )
 
         # extract submenu by path
         menu = functools.reduce(lambda m, p: m[p],
-                                utils.get_path_prefixes(path.split('/')),
+                                utils.get_path_prefixes(menu_path),
                                 global_menu)
 
-        for resource_type, raw_resources in [('directory', directories),
-                                             ('file', files)]:
-            for resource in (r for r in raw_resources
-                             if not r.startswith('.')):
-                alogger.debug({'action': 'indexing',
-                               'path': utils.mkpath(path, resource),
-                               'type': resource_type})
-
-                factory = resource_types[resource_type]
-                resouce_path = utils.mkpath(source_path, path, resource)
-                try:
-                    menu.add(factory(
-                        resource,
-                        utils.mkpath(path, resource),
-                        server,
-                        port,
-                        resouce_path,
-                    ))
-                except UnicodeDecodeError:
-                    alogger.warning({'action': 'indexing',
-                                     'path': resouce_path,
-                                     'error': 'File is not utf-8'})
+        factory = RESOURCE_TYPE_FACTORIES[type_]
+        logger.debug({
+            'status': 'start_indexing',
+        })
+        try:
+            menu.add(factory(
+                name,
+                selector,
+                server,
+                port,
+                fs_path,
+            ))
+        except UnicodeDecodeError:
+            logger.warning({
+                'status': 'unicode error',
+            })
 
     return global_menu
 
 
 def get_router(index, router=None):
+    logger = log.get_logger('router')
+    logger.info({'action': 'get_router',
+                 'from': index.items(),
+                 'from_type': 'index'})
+
     if router is None:
-        logger = log.get_logger('router')
         router = {'': index}
-        logger.info({'action': 'get_router',
-                     'from': type(index),
-                     'from_type': 'index'})
 
     for route, item in index.items():
         router[route] = item
